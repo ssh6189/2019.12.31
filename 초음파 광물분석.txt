@@ -1,0 +1,68 @@
+################################################초음파 광물 분석########################################################
+from keras.models import Sequential
+from keras.layers.core import Dense
+from sklearn.preprocessing import LabelEncoder
+import pandas as pd
+import numpy
+import tensorflow as tf
+
+seed = 0
+numpy.random.seed(seed)        # seed 값 설정
+tf.set_random_seed(seed)
+
+df = pd.read_csv('C:/Users/student/Desktop/dataset/dataset/sonar.csv', header=None)           # 데이터 입력
+dataset = df.values
+X = dataset[:,0:60]
+Y_obj = dataset[:,60]
+#print(Y_obj.unique())
+
+e = LabelEncoder()
+e.fit(Y_obj)
+Y = e.transform(Y_obj)            # 문자열 변환
+
+model = Sequential()              # 모델 설정
+model.add(Dense(24, input_dim=60, activation='relu'))
+model.add(Dense(10, activation='relu'))
+model.add(Dense(1, activation='sigmoid'))
+model.compile(loss='mean_squared_error',   optimizer='adam',    metrics=['accuracy'])  # 모델 컴파일
+model.fit(X, Y, epochs=200, batch_size=5)                      # 모델 실행
+print("\n Accuracy: %.4f" % (model.evaluate(X, Y)[1]))     # 결과 출력
+
+
+################과적합 해결##############
+
+#학습 데이터와 테스트 데이터가 중복되면 과적합이 발생합니다.#########################################
+#데이터를 7:3의 비율로 랜덤하게 학습 데이터와 테스트 데이터로 분리해서 모델을 학습시키고 정확도를 측정합니다.
+from keras.models import Sequential
+from keras.layers.core import Dense
+from sklearn.preprocessing import LabelEncoder
+import pandas as pd
+import numpy
+import tensorflow as tf
+
+seed = 0
+numpy.random.seed(seed)        # seed 값 설정
+tf.set_random_seed(seed)
+
+df = pd.read_csv('C:/Users/student/Desktop/dataset/dataset/sonar.csv', header=None)           # 데이터 입력
+dataset = df.values
+X = dataset[:,0:60]
+Y_obj = dataset[:,60]
+
+e = LabelEncoder()
+e.fit(Y_obj)
+Y = e.transform(Y_obj)            # 문자열 변환
+
+# 학습셋과 테스트셋의 구분
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.3, random_state=seed)
+
+model = Sequential()
+model.add(Dense(24, input_dim=60, activation='relu'))
+model.add(Dense(10, activation='relu'))
+model.add(Dense(1, activation='sigmoid'))
+
+model.compile(loss='mean_squared_error',   optimizer='adam',     metrics=['accuracy'])
+model.fit(X_train, Y_train, epochs=130, batch_size=5)
+
+# 테스트셋에 모델 적용
+print("\n Test Accuracy: %.4f" % (model.evaluate(X_test, Y_test)[1]))

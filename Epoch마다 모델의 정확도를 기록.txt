@@ -1,0 +1,46 @@
+###########################################################
+#Epoch마다 모델의 정확도를 기록, 저장 (파일 형식 .hdf5) 
+# 모델을 저장하기 위햇 ModelCheckpoint함수를 콜백함수로 사용 - 모니터할 값 지정 (loss, acc  ,val_loss, val_acc ), verbose : 정보 표시 상세도 (0, 1, 2) 지정
+# save_best_only은 정확도가 이전 학습보다 개선되었을때만 저장하도록 함
+
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.callbacks import ModelCheckpoint, EarlyStopping
+import pandas as pd
+import numpy
+import tensorflow as tf
+import matplotlib.pyplot as plt
+
+seed = 0
+numpy.random.seed(seed)  # seed 값 설정
+tf.set_random_seed(seed)
+
+df_pre = pd.read_csv('C:/Users/student/Desktop/dataset/dataset/wine.csv', header=None)
+df = df_pre.sample(frac=1)  #rac = 1 지정은 원본 데이터의 100%를 불러오라는 의미
+dataset = df.values
+X = dataset[:,0:12]
+Y = dataset[:,12]
+
+model = Sequential() # 모델 설정(4개의 은닉층을 만들어 각각 30, 12, 8, 1개의 노드를 주었습니다)
+model.add(Dense(30, input_dim=12, activation='relu'))
+model.add(Dense(12, activation='relu'))
+model.add(Dense(8, activation='relu'))
+model.add(Dense(1, activation='sigmoid'))
+ 
+from keras.callbacks import ModelCheckpoint
+
+# 모델 컴파일
+model.compile(loss='binary_crossentropy',   optimizer='adam',    metrics=['accuracy'])
+
+# 모델 저장 폴더 설정
+MODEL_DIR = './model/'
+if not os.path.exists(MODEL_DIR):
+    os.mkdir(MODEL_DIR)
+
+#테스트 오차는 케라스 내부에서 val_loss, 학습 정확도는 acc, 테스트셋 정확도는 val_acc, 학습셋 오차는 loss로 각각 기록됩니다
+# 모델 저장 조건 설정
+modelpath="./model/{epoch:02d}-{val_loss:.4f}.hdf5"
+checkpointer = ModelCheckpoint(filepath=modelpath, monitor='val_loss', verbose=1, save_best_only=True)
+
+# 모델 실행 및 저장
+model.fit(X, Y, validation_split=0.2, epochs=200, batch_size=200,verbose=0, callbacks=[checkpointer])

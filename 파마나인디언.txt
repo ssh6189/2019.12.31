@@ -1,0 +1,22 @@
+######################파마나인디언#############################
+from keras.models import Sequential
+from keras.layers import Dense
+import numpy
+import tensorflow as tf
+
+seed = 0
+numpy.random.seed(seed)                   # seed 값 생성
+tf.set_random_seed(seed)
+
+dataset = numpy.loadtxt("C:/Users/student/Desktop/dataset/dataset/pima-indians-diabets.csv", delimiter=",")               # 데이터 로드
+X = dataset[:,0:8]
+Y = dataset[:,8]
+
+model = Sequential()                                                # 모델의 설정
+model.add(Dense(12, input_dim=8, activation='relu'))
+model.add(Dense(8, activation='relu'))
+model.add(Dense(1, activation='sigmoid'))
+
+model.compile(loss='binary_crossentropy',   optimizer='adam',      metrics=['accuracy'])   # 모델 컴파일
+model.fit(X, Y, epochs=200, batch_size=10)                                # 모델 실행
+print("\n Accuracy: %.4f" % (model.evaluate(X, Y)[1]))                # 결과 출력
